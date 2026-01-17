@@ -21,3 +21,24 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+code .gitignore
+```
+
+**Paste this:**
+```
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Node
+node_modules/
+npm-debug.log
+
+# Docker
+ecr_password.txt
+
+# OS
+.DS_Store
+Thumbs.db

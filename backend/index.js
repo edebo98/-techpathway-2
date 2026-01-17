@@ -1,24 +1,32 @@
 const express = require('express')
 const { v4: uuidv4 } = require('uuid');
-const { CORS_ORIGIN } = require('./config')
-console.log(require('./config'))
-console.log(CORS_ORIGIN)
+const config = require('./config')
+
+console.log(config)
 
 const ID = uuidv4()
-const PORT = 8080
-
+const PORT = config.port
 const app = express()
+
 app.use(express.json())
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
-    res.setHeader('Access-Control-Allow-Methods', 'GET')
-    res.setHeader('Access-Control-Allow-Headers', '*')
+    const origin = req.headers.origin;
+    if (config.corsOrigins.includes('*') || config.corsOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     next();
 })
-app.get(/.*/, (req, res) => {
-    console.log(`${new Date().toISOString()} GET`)
-    res.json({id: ID})
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy' })
+})
+
+app.get('/api/guid', (req, res) => {
+    console.log(`${new Date().toISOString()} GET /api/guid`)
+    res.json({ guid: ID })
 })
 
 app.listen(PORT, () => {
