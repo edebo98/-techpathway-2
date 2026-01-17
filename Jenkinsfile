@@ -2,20 +2,13 @@ pipeline {
     agent any
     
     environment {
-        // ECR Details
         AWS_REGION = 'us-east-1'
         AWS_ACCOUNT_ID = '502376765306'
         ECR_BACKEND = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/techpathway-backend"
         ECR_FRONTEND = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/techpathway-frontend"
-        
-        // ECS Details
         ECS_CLUSTER = 'techpathway-cluster'
         BACKEND_SERVICE = 'techpathway-backend-service'
         FRONTEND_SERVICE = 'techpathway-frontend-service'
-        
-        // AWS Credentials
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
     }
     
     stages {
@@ -85,12 +78,12 @@ pipeline {
                 script {
                     echo '🚀 Triggering ECS deployment...'
                     sh '''
-                        /usr/local/bin/aws ecs update-service
+                        /usr/local/bin/aws ecs update-service \
                             --cluster ${ECS_CLUSTER} \
                             --service ${BACKEND_SERVICE} \
                             --force-new-deployment \
                             --region ${AWS_REGION}
-
+                        
                         /usr/local/bin/aws ecs update-service \
                             --cluster ${ECS_CLUSTER} \
                             --service ${FRONTEND_SERVICE} \
@@ -109,10 +102,6 @@ pipeline {
         }
         failure {
             echo '❌ Pipeline failed. Check logs above.'
-        }
-        always {
-            echo '🧹 Cleaning up Docker images...'
-            sh 'docker system prune -f || true'
         }
     }
 }
