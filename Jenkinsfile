@@ -3,9 +3,6 @@ pipeline {
     
     environment {
         AWS_REGION = 'us-east-1'
-        AWS_ACCOUNT_ID = '502376765306'
-        ECR_BACKEND = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/techpathway-backend"
-        ECR_FRONTEND = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/techpathway-frontend"
         ECS_CLUSTER = 'techpathway-cluster'
         BACKEND_SERVICE = 'techpathway-backend-service'
         FRONTEND_SERVICE = 'techpathway-frontend-service'
@@ -14,69 +11,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo '📦 Pulling code from GitHub...'
+                echo '📦 Checking out code from GitHub...'
                 checkout scm
-            }
-        }
-        
-        stage('Login to ECR') {
-            steps {
-                script {
-                    echo '🔐 Logging into AWS ECR...'
-                    sh '''
-                        /usr/local/bin/aws ecr get-login-password --region ${AWS_REGION} | \
-                        docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-                    '''
-                }
-            }
-        }
-        
-        stage('Build Backend Image') {
-            steps {
-                script {
-                    echo '🔨 Building backend Docker image...'
-                    sh '''
-                        cd backend
-                        docker build -t techpathway-backend:${BUILD_NUMBER} .
-                        docker tag techpathway-backend:${BUILD_NUMBER} ${ECR_BACKEND}:latest
-                        docker tag techpathway-backend:${BUILD_NUMBER} ${ECR_BACKEND}:${BUILD_NUMBER}
-                    '''
-                }
-            }
-        }
-        
-        stage('Build Frontend Image') {
-            steps {
-                script {
-                    echo '🔨 Building frontend Docker image...'
-                    sh '''
-                        cd frontend
-                        docker build -t techpathway-frontend:${BUILD_NUMBER} .
-                        docker tag techpathway-frontend:${BUILD_NUMBER} ${ECR_FRONTEND}:latest
-                        docker tag techpathway-frontend:${BUILD_NUMBER} ${ECR_FRONTEND}:${BUILD_NUMBER}
-                    '''
-                }
-            }
-        }
-        
-        stage('Push to ECR') {
-            steps {
-                script {
-                    echo '📤 Pushing images to ECR...'
-                    sh '''
-                        docker push ${ECR_BACKEND}:latest
-                        docker push ${ECR_BACKEND}:${BUILD_NUMBER}
-                        docker push ${ECR_FRONTEND}:latest
-                        docker push ${ECR_FRONTEND}:${BUILD_NUMBER}
-                    '''
-                }
             }
         }
         
         stage('Deploy to ECS') {
             steps {
                 script {
-                    echo '🚀 Triggering ECS deployment...'
+                    echo '🚀 Deploying to ECS...'
                     sh '''
                         /usr/local/bin/aws ecs update-service \
                             --cluster ${ECS_CLUSTER} \
