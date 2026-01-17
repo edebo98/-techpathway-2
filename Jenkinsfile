@@ -31,7 +31,7 @@ pipeline {
                 script {
                     echo '🔐 Logging into AWS ECR...'
                     sh '''
-                        aws ecr get-login-password --region ${AWS_REGION} | \
+                        /usr/local/bin/aws ecr get-login-password --region ${AWS_REGION} | \
                         docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
                     '''
                 }
@@ -85,13 +85,13 @@ pipeline {
                 script {
                     echo '🚀 Triggering ECS deployment...'
                     sh '''
-                        aws ecs update-service \
+                        /usr/local/bin/aws ecs update-service
                             --cluster ${ECS_CLUSTER} \
                             --service ${BACKEND_SERVICE} \
                             --force-new-deployment \
                             --region ${AWS_REGION}
-                        
-                        aws ecs update-service \
+
+                        /usr/local/bin/aws ecs update-service \
                             --cluster ${ECS_CLUSTER} \
                             --service ${FRONTEND_SERVICE} \
                             --force-new-deployment \
